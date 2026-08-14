@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { StatusBadge, statusLabel } from "./ui";
 import { pkrLabel, shortDate } from "@/lib/format";
@@ -29,12 +30,14 @@ export function OrderRow({ order, t }: { order: Order; t: Translations }) {
             </span>
           ) : null}
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+        {/* Separators are their own flex children so flexbox orders them,
+            not the bidi algorithm, which strands them in RTL. */}
+        <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted">
           {meta.map((m, i) => (
-            <span key={`${m}-${i}`}>
-              {i > 0 ? "· " : ""}
-              {m}
-            </span>
+            <Fragment key={`${m}-${i}`}>
+              {i > 0 ? <span aria-hidden="true">·</span> : null}
+              <span>{m}</span>
+            </Fragment>
           ))}
         </div>
       </div>
