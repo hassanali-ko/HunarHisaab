@@ -39,7 +39,7 @@ export function StatTile({
     <Card className="flex flex-col gap-1">
       <span className="text-[13px] font-medium text-muted">{label}</span>
       <span
-        className={`text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl ${toneClass}`}
+        className={`text-xl font-semibold tracking-tight tabular-nums sm:text-3xl ${toneClass}`}
       >
         {value}
       </span>
