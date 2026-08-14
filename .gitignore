@@ -39,8 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-!.env.local.example
 
 # Next.js auto-generated agent instruction files (kept locally, not published)
 AGENTS.md
 CLAUDE.md
+
+# local tooling
+.claude/
