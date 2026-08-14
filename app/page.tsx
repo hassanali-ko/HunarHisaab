@@ -1,69 +1,123 @@
-import Image from "next/image";
+import { LangSwitcher } from "@/components/lang";
+import { ButtonLink, Card, Logo } from "@/components/ui";
+import { SAMPLE_WHATSAPP_MESSAGE } from "@/lib/demo";
+import { getDict } from "@/lib/i18n";
+import { getLocale } from "@/lib/locale-server";
 
-export default function Home() {
+export default async function Home() {
+  const locale = await getLocale();
+  const t = getDict(locale);
+
+  const steps = [
+    { title: t.step1Title, body: t.step1Body },
+    { title: t.step2Title, body: t.step2Body },
+    { title: t.step3Title, body: t.step3Body },
+  ];
+
+  const extracted: [string, string][] = [
+    [t.itemLabel, "Embroidered suit"],
+    [t.qtyLabel, "3"],
+    [t.priceLabel, "PKR 4,200"],
+    [t.deadlineLabel, "23rd"],
+    [t.areaLabel, "DHA, Lahore"],
+    [t.paymentLabel, "Easypaisa"],
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="flex-1">
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-5 py-5">
+        <Logo />
+        <div className="flex items-center gap-2">
+          <LangSwitcher />
+          <ButtonLink
+            href="/login"
+            variant="ghost"
+            className="hidden whitespace-nowrap text-sm sm:inline-flex"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {t.login}
+          </ButtonLink>
         </div>
-      </main>
-    </div>
+      </header>
+
+      <section className="mx-auto w-full max-w-5xl px-5 pb-14 pt-6 sm:pt-12">
+        <p className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1.5 text-xs font-medium text-primary-deep">
+          {t.heroBadge}
+        </p>
+
+        <h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+          {t.heroPre} <span className="text-primary">{t.heroMark}</span>{" "}
+          {t.heroPost}
+        </h1>
+
+        <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted">
+          {t.heroSub}
+        </p>
+
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <ButtonLink href="/login" size="lg">
+            {t.ctaPrimary}
+          </ButtonLink>
+          <ButtonLink href="/login?demo=1" variant="secondary" size="lg">
+            {t.ctaSecondary}
+          </ButtonLink>
+        </div>
+
+        <div className="mt-12 grid gap-4 md:grid-cols-2">
+          <Card className="bg-[#dcf8c6]/40">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              {t.waCardLabel}
+            </p>
+            <p
+              dir="ltr"
+              className="mt-3 rounded-2xl rounded-tl-sm bg-[#dcf8c6] p-4 text-start text-[15px] leading-relaxed text-[#1d2521]"
+              style={{ fontFamily: "var(--font-sans)" }}
+            >
+              {SAMPLE_WHATSAPP_MESSAGE}
+            </p>
+          </Card>
+
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              {t.appCardLabel}
+            </p>
+            <dl className="mt-3 space-y-2.5 text-sm">
+              {extracted.map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4">
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="font-medium tabular-nums">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-4 rounded-xl bg-accent-soft px-3 py-2 text-sm font-medium text-accent">
+              {t.timeIsCost}
+            </p>
+          </Card>
+        </div>
+
+        <div className="mt-12 grid gap-4 sm:grid-cols-3">
+          {steps.map((step, i) => (
+            <Card key={step.title}>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-sm font-semibold tabular-nums text-primary-deep">
+                {i + 1}
+              </span>
+              <h3 className="mt-3 font-semibold">{step.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                {step.body}
+              </p>
+            </Card>
+          ))}
+        </div>
+
+        <p className="mt-10 max-w-2xl text-sm leading-relaxed text-muted">
+          {t.landingDisclaimer}
+        </p>
+      </section>
+
+      <footer className="border-t border-border">
+        <div className="mx-auto w-full max-w-5xl px-5 py-6 text-sm text-muted">
+          {t.footerLine}
+        </div>
+      </footer>
+    </main>
   );
 }

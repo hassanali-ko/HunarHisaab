@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf7f1;
+  --foreground: #1d2521;
+  --card: #ffffff;
+  --muted: #6b7570;
+  --border: #e7e1d6;
+  --primary: #0e6b3a;
+  --primary-deep: #01411c;
+  --primary-soft: #e3f0e8;
+  --accent: #e85d3d;
+  --accent-soft: #fdeee9;
+  --gold: #c9922a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-deep: var(--primary-deep);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-gold: var(--gold);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Nastaliq needs more vertical room than a Latin face at the same size. */
+html[data-locale="urdu"] body {
+  font-family: var(--font-urdu), var(--font-sans), serif;
+  line-height: 2;
+}
+
+html[data-locale="urdu"] h1,
+html[data-locale="urdu"] h2,
+html[data-locale="urdu"] h3 {
+  line-height: 1.9;
+}
+
+/* Numbers and currency stay Latin even in Urdu, so they read as amounts. */
+.tabular-nums {
+  font-family: var(--font-sans), Arial, sans-serif;
 }
