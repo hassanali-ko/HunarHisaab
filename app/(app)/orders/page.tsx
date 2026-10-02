@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { Notice } from "@/components/ui";
 import { OrderFilters } from "./filters";
 import { getDict } from "@/lib/i18n";
@@ -8,7 +9,8 @@ import { getOrders, requireOnboarded } from "@/lib/data";
 export const metadata: Metadata = { title: "Orders" };
 export const dynamic = "force-dynamic";
 
-export default async function OrdersPage() {
+export default async function OrdersPage({ searchParams }: PageProps<"/orders">) {
+  const { q } = await searchParams;
   const { supabase, user } = await requireOnboarded();
   const { locale } = await readPrefs();
   const t = getDict(locale);
@@ -16,6 +18,7 @@ export default async function OrdersPage() {
 
   return (
     <>
+      <AutoRefresh />
       <h1 className="text-[1.6rem] leading-tight">{t.ordersTitle}</h1>
       <p className="mt-1 text-[14px] text-soft">
         {orders.length} {t.ordersCount}
@@ -27,7 +30,11 @@ export default async function OrdersPage() {
         </Notice>
       ) : (
         <div className="mt-5">
-          <OrderFilters orders={orders} t={t} />
+          <OrderFilters
+            orders={orders}
+            t={t}
+            initialQuery={typeof q === "string" ? q.slice(0, 120) : ""}
+          />
         </div>
       )}
     </>

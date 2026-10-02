@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { Card, Line, Notice, Sheet, StatusPill } from "@/components/ui";
 import { Seam } from "@/components/marks";
 import { ShareCard } from "@/components/share-card";
@@ -48,10 +49,7 @@ export default async function OrderPage({
 
   const waText = [
     `${t.pubFrom} ${profile.business_name ?? profile.display_name ?? ""}`.trim(),
-    `${order.item}${order.quantity > 1 ? ` x${order.quantity}` : ""} — ${rs(p.revenue)}`.replace(
-      "—",
-      "·",
-    ),
+    `${order.item}${order.quantity > 1 ? ` x${order.quantity}` : ""}, ${rs(p.revenue)}`,
     t.pubIntro,
   ].join("\n");
 
@@ -59,6 +57,9 @@ export default async function OrderPage({
 
   return (
     <>
+      {/* Watches for the customer confirming on their own phone. */}
+      {!confirmed ? <AutoRefresh /> : null}
+
       {query?.new === "1" ? (
         <Notice tone="good" className="mb-4">
           {t.orderSaved}
@@ -77,8 +78,16 @@ export default async function OrderPage({
         <StatusPill status={order.status} label={statusLabel(order.status, t)} />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
         <StatusControls orderId={order.id} status={order.status} />
+        {order.status !== "cancelled" ? (
+          <Link
+            href={`/orders/${order.id}/edit`}
+            className="text-[13px] font-medium text-green underline underline-offset-4"
+          >
+            {t.editOrder}
+          </Link>
+        ) : null}
       </div>
 
       {confirmed ? (
@@ -91,6 +100,7 @@ export default async function OrderPage({
       ) : order.status !== "cancelled" && linkLive ? (
         <Card stitched className="mt-5 p-4">
           <ShareCard
+            orderId={order.id}
             url={shareUrl}
             whatsappText={waText}
             phone={order.customer_phone}

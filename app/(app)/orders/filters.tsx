@@ -7,8 +7,16 @@ import type { Dict } from "@/lib/i18n";
 import { ORDER_STATUSES, statusLabel, type Order } from "@/lib/types";
 
 /** Search and status filtering, kept on the client so it feels immediate. */
-export function OrderFilters({ orders, t }: { orders: Order[]; t: Dict }) {
-  const [query, setQuery] = useState("");
+export function OrderFilters({
+  orders,
+  t,
+  initialQuery = "",
+}: {
+  orders: Order[];
+  t: Dict;
+  initialQuery?: string;
+}) {
+  const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState<string>("all");
 
   const present = useMemo(() => {
@@ -49,7 +57,7 @@ export function OrderFilters({ orders, t }: { orders: Order[]; t: Dict }) {
             aria-pressed={status === s}
             className={`shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
               status === s
-                ? "border-green bg-green text-white"
+                ? "border-green bg-green text-on-green"
                 : "border-rule bg-raised text-soft hover:bg-green-wash"
             }`}
           >

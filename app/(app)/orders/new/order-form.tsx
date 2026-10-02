@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import {
   Button,
   Card,
@@ -16,8 +16,13 @@ import { pkr, rs } from "@/lib/format";
 import { calculatePricing, roundToQuotable } from "@/lib/pricing";
 import { parseOrder } from "@/lib/parser";
 import type { ParsedOrder } from "@/lib/parser/types";
-import { PAYMENT_METHODS, type PriceBookEntry, type Profile } from "@/lib/types";
-import { createOrder, type SaveState } from "../actions";
+import {
+  PAYMENT_METHODS,
+  type Order,
+  type PriceBookEntry,
+  type Profile,
+} from "@/lib/types";
+import { createOrder, updateOrder, type SaveState } from "../actions";
 
 const SAMPLES = [
   "Assalam o alaikum baji, 3 green embroidered suits chahiye 23rd tak. 4200 each theek hain? delivery DHA Lahore. advance easypaisa kar doon?",
@@ -29,72 +34,124 @@ type Fields = Record<string, string>;
 
 const LOW = 0.7;
 
+const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
+
 export function OrderForm({
   profile,
   priceBook,
   aiReady,
+  initial,
 }: {
   profile: Profile;
   priceBook: PriceBookEntry[];
   aiReady: boolean;
+  /** Present when editing an existing order. */
+  initial?: Order;
 }) {
   const t = useT();
-  const [tab, setTab] = useState<"paste" | "manual">("paste");
-  const [source, setSource] = useState("");
-  const [reviewing, setReviewing] = useState(false);
+  const editing = Boolean(initial);
+  // Once the customer confirmed, what they agreed to is fixed. The database
+  // enforces this too; the form just says so up front.
+  const locked = Boolean(initial?.confirmed_at);
+  const [tab, setTab] = useState<"paste" | "manual">(editing ? "manual" : "paste");
+  const [source, setSource] = useState(initial?.source_text ?? "");
+  const [reviewing, setReviewing] = useState(editing);
   const [parsed, setParsed] = useState<ParsedOrder | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiNote, setAiNote] = useState<string | null>(null);
   const [sampleIndex, setSampleIndex] = useState(0);
 
-  const [fields, setFields] = useState<Fields>({
-    item: "",
-    item_category: "",
-    quantity: "1",
-    unit: "",
-    unit_price: "",
-    customer_name: "",
-    customer_phone: "",
-    deadline_text: "",
-    deadline_date: "",
-    delivery_area: "",
-    city: "",
-    payment_method: "",
-    notes: "",
-    material_cost: "",
-    labor_hours: "",
-    hourly_labor_value: String(profile.default_hourly_rate || 250),
-    packaging_cost: "",
-    delivery_cost: "",
-    other_cost: "",
-    desired_profit_percent: String(profile.default_profit_percent || 25),
-  });
+  const [fields, setFields] = useState<Fields>(() =>
+    initial
+      ? {
+          item: initial.item,
+          item_category: str(initial.item_category),
+          quantity: str(initial.quantity),
+          unit: str(initial.unit),
+          unit_price: str(initial.unit_price),
+          customer_name: str(initial.customer_name),
+          customer_phone: str(initial.customer_phone),
+          deadline_text: str(initial.deadline_text),
+          deadline_date: str(initial.deadline_date),
+          delivery_area: str(initial.delivery_area),
+          city: str(initial.city),
+          payment_method: str(initial.payment_method),
+          notes: str(initial.notes),
+          material_cost: str(initial.material_cost),
+          labor_hours: str(initial.labor_hours),
+          hourly_labor_value: str(initial.hourly_labor_value),
+          packaging_cost: str(initial.packaging_cost),
+          delivery_cost: str(initial.delivery_cost),
+          other_cost: str(initial.other_cost),
+          desired_profit_percent: str(initial.desired_profit_percent),
+          amount_paid: str(initial.amount_paid),
+        }
+      : {
+          item: "",
+          item_category: "",
+          quantity: "1",
+          unit: "",
+          unit_price: "",
+          customer_name: "",
+          customer_phone: "",
+          deadline_text: "",
+          deadline_date: "",
+          delivery_area: "",
+          city: "",
+          payment_method: "",
+          notes: "",
+          material_cost: "",
+          labor_hours: "",
+          hourly_labor_value: String(profile.default_hourly_rate || 250),
+          packaging_cost: "",
+          delivery_cost: "",
+          other_cost: "",
+          desired_profit_percent: String(profile.default_profit_percent || 25),
+          amount_paid: "0",
+        },
+  );
 
   const [state, action, saving] = useActionState<SaveState, FormData>(
-    createOrder,
+    initial ? updateOrder.bind(null, initial.id) : createOrder,
     undefined,
   );
 
   const set = (key: string) => (value: string) =>
     setFields((f) => ({ ...f, [key]: value }));
 
-  /** Applies a parse result without wiping anything already typed. */
+  /** What the last read put in each field, to tell her edits from ours. */
+  const lastRead = useRef<Fields>({});
+
+  /**
+   * Applies a parse result. A field she has typed into is left alone. A field
+   * the previous message filled is replaced, even with a blank, so reading a
+   * second customer's message never leaves the first customer's area behind.
+   */
   function apply(result: ParsedOrder) {
     setParsed(result);
-    setFields((f) => ({
-      ...f,
-      item: result.item?.value ?? f.item,
-      quantity: result.quantity ? String(result.quantity.value) : f.quantity,
-      unit: result.unit?.value ?? f.unit,
-      unit_price: result.unitPrice ? String(result.unitPrice.value) : f.unit_price,
-      customer_name: result.customerName?.value ?? f.customer_name,
-      deadline_text: result.deadlineText?.value ?? f.deadline_text,
-      deadline_date: result.deadlineDate?.value ?? f.deadline_date,
-      delivery_area: result.deliveryArea?.value ?? f.delivery_area,
-      city: result.city?.value ?? f.city,
-      payment_method: result.paymentMethod?.value ?? f.payment_method,
-      notes: result.notes?.value ?? f.notes,
-    }));
+    const read: Fields = {
+      item: result.item?.value ?? "",
+      quantity: result.quantity ? String(result.quantity.value) : "1",
+      unit: result.unit?.value ?? "",
+      unit_price: result.unitPrice ? String(result.unitPrice.value) : "",
+      customer_name: result.customerName?.value ?? "",
+      deadline_text: result.deadlineText?.value ?? "",
+      deadline_date: result.deadlineDate?.value ?? "",
+      delivery_area: result.deliveryArea?.value ?? "",
+      city: result.city?.value ?? "",
+      payment_method: result.paymentMethod?.value ?? "",
+      notes: result.notes?.value ?? "",
+    };
+    setFields((f) => {
+      const next = { ...f };
+      for (const [key, value] of Object.entries(read)) {
+        const untouched = f[key] === "" || f[key] === lastRead.current[key] ||
+          (key === "quantity" && f[key] === "1");
+        if (untouched) next[key] = value;
+      }
+      return next;
+    });
+    lastRead.current = read;
     setReviewing(true);
   }
 
@@ -135,13 +192,15 @@ export function OrderForm({
   function applyPriceBook(entry: PriceBookEntry) {
     setFields((f) => ({
       ...f,
-      item: f.item || entry.label,
+      // On a confirmed order the agreed item and price stay put; only her
+      // private costs come from the price book.
+      item: locked ? f.item : f.item || entry.label,
       item_category: entry.category ?? f.item_category,
       unit: entry.unit ?? f.unit,
       material_cost: String(entry.material_cost),
       labor_hours: String(entry.labor_hours),
       packaging_cost: String(entry.packaging_cost),
-      unit_price: f.unit_price || String(entry.last_price),
+      unit_price: locked ? f.unit_price : f.unit_price || String(entry.last_price),
     }));
     setReviewing(true);
   }
@@ -189,8 +248,15 @@ export function OrderForm({
       <input type="hidden" name="city" value={fields.city} />
       <input type="hidden" name="item_category" value={fields.item_category} />
       <input type="hidden" name="unit" value={fields.unit} />
+      <input type="hidden" name="amount_paid" value={fields.amount_paid} />
 
-      <div className="flex rounded-xl border border-rule bg-raised p-1 text-[13.5px] font-medium">
+      {locked ? <Notice tone="good">{t.lockedByConfirm}</Notice> : null}
+
+      <div
+        className={`flex rounded-xl border border-rule bg-raised p-1 text-[13.5px] font-medium ${
+          editing ? "hidden" : ""
+        }`}
+      >
         {(
           [
             ["paste", t.tabPaste],
@@ -207,7 +273,7 @@ export function OrderForm({
             }}
             aria-pressed={tab === key}
             className={`flex-1 rounded-lg px-3 py-2 transition-colors ${
-              tab === key ? "bg-green text-white" : "text-soft hover:bg-green-wash"
+              tab === key ? "bg-green text-on-green" : "text-soft hover:bg-green-wash"
             }`}
           >
             {label}
@@ -306,6 +372,7 @@ export function OrderForm({
             <Field label={t.fItem} flag={parsed ? flag(conf(parsed.item)) : undefined}>
               <input
                 name="item"
+                readOnly={locked}
                 required
                 dir="auto"
                 maxLength={160}
@@ -323,6 +390,7 @@ export function OrderForm({
               >
                 <input
                   name="quantity"
+                  readOnly={locked}
                   type="number"
                   min="0.01"
                   step="any"
@@ -340,6 +408,7 @@ export function OrderForm({
               >
                 <input
                   name="unit_price"
+                  readOnly={locked}
                   type="number"
                   min="0"
                   step="any"
@@ -422,7 +491,7 @@ export function OrderForm({
           <Card className="flex flex-col gap-4 p-4">
             <div>
               <h2 className="text-[16px]">{t.costTitle}</h2>
-              <p className="mt-1 text-[13.5px] text-marigold">{t.costSub}</p>
+              <p className="mt-1 text-[13.5px] text-marigold-ink">{t.costSub}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -541,18 +610,20 @@ export function OrderForm({
                       {rs(roundToQuotable(p.suggestedPricePerUnit))}
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      set("unit_price")(
-                        String(roundToQuotable(p.suggestedPricePerUnit)),
-                      )
-                    }
-                  >
-                    {t.calcUseThis}
-                  </Button>
+                  {locked ? null : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        set("unit_price")(
+                          String(roundToQuotable(p.suggestedPricePerUnit)),
+                        )
+                      }
+                    >
+                      {t.calcUseThis}
+                    </Button>
+                  )}
                 </div>
 
                 {p.chosenPricePerUnit > 0 ? (
@@ -625,7 +696,7 @@ export function OrderForm({
               disabled={saving}
               className="flex-1 sm:flex-none"
             >
-              {saving ? t.savingOrder : t.saveOrder}
+              {saving ? t.savingOrder : editing ? t.save : t.saveOrder}
             </Button>
           </div>
         </div>
