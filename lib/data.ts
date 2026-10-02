@@ -71,5 +71,4 @@ export async function getPriceBook(
   return (data ?? []) as PriceBookEntry[];
 }
 
-/** Orders that count as money earned rather than money hoped for. */
-export const EARNED: string[] = ["confirmed", "in_progress", "delivered", "paid"];
+export { AGREED as EARNED } from "@/lib/types";

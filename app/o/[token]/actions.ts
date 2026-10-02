@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { createAnonClient } from "@/lib/supabase/anon";
+import { createClient } from "@/lib/supabase/server";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 import { uuid } from "@/lib/security/validate";
 
@@ -14,8 +14,10 @@ export type ConfirmState =
 /**
  * Public confirmation.
  *
- * Runs with no session and no elevated key. The database function it calls is
- * scoped to one token, which is the only thing this path can act on.
+ * Runs as whoever is looking: usually nobody, sometimes the seller testing her
+ * own link. Passing her session through is what lets the database turn her
+ * away, so a seller cannot confirm her own order by accident or on purpose.
+ * There is no elevated key here either way.
  */
 export async function confirmOrder(
   _prev: ConfirmState,
@@ -28,7 +30,7 @@ export async function confirmOrder(
   if (!allowed) return { ok: false, reason: "rate_limited" };
 
   try {
-    const supabase = createAnonClient();
+    const supabase = await createClient();
     const { data, error } = await supabase.rpc("confirm_public_order", {
       p_token: token,
     });

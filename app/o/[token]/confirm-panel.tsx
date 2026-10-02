@@ -10,10 +10,12 @@ export function ConfirmPanel({
   token,
   alreadyConfirmed,
   expired,
+  isOwner,
 }: {
   token: string;
   alreadyConfirmed: boolean;
   expired: boolean;
+  isOwner: boolean;
 }) {
   const t = useT();
   const [state, action, pending] = useActionState<ConfirmState, FormData>(
@@ -25,10 +27,12 @@ export function ConfirmPanel({
 
   if (expired && !done) return <Notice tone="warn">{t.pubExpired}</Notice>;
 
+  if (isOwner && !done) return <Notice tone="info">{t.ownOrderNotice}</Notice>;
+
   if (done) {
     return (
       <div className="rounded-2xl border border-green-edge bg-green-wash p-6 text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green text-white">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green text-on-green">
           <svg viewBox="0 0 16 16" className="h-6 w-6" aria-hidden="true">
             <path
               fill="currentColor"
@@ -53,7 +57,9 @@ export function ConfirmPanel({
     state && !state.ok
       ? state.reason === "expired"
         ? t.pubExpired
-        : state.reason === "rate_limited"
+        : state.reason === "own_order"
+          ? t.ownOrderNotice
+          : state.reason === "rate_limited"
           ? t.somethingWentWrong
           : state.reason === "not_found" || state.reason === "cancelled"
             ? t.pubNotFound

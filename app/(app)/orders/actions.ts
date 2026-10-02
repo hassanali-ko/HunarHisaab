@@ -30,11 +30,14 @@ async function upsertCustomer(
 ): Promise<string | null> {
   if (!name) return null;
 
+  // ilike treats % and _ as wildcards. A customer called "100%" should match
+  // only herself, not everyone.
+  const literal = name.replace(/[\\%_]/g, (c) => `\\${c}`);
   const { data: existing } = await supabase
     .from("customers")
     .select("id")
     .eq("user_id", userId)
-    .ilike("name", name)
+    .ilike("name", literal)
     .maybeSingle();
 
   if (existing?.id) {
@@ -111,7 +114,12 @@ export async function updateOrder(
     .eq("id", orderId)
     .eq("user_id", user.id);
 
+  // The confirmation guard explains itself in plain words, so pass it on.
   if (error) return { error: error.message };
+
+  if (form.get("save_to_pricebook") === "on") {
+    await savePriceBookEntry(form, user.id, supabase);
+  }
 
   revalidatePath("/", "layout");
   redirect(`/orders/${orderId}`);
@@ -133,25 +141,50 @@ async function savePriceBookEntry(
   });
   if (!parsed.success) return;
 
-  await supabase.from("price_book").upsert(
-    { ...parsed.data, user_id: userId, times_used: 1 },
-    { onConflict: "user_id,label", ignoreDuplicates: false },
-  );
+  // The unique index is on lower(label), which PostgREST cannot target with
+  // on conflict, so this looks first and then updates or inserts.
+  const literal = parsed.data.label.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const { data: existing } = await supabase
+    .from("price_book")
+    .select("id, times_used")
+    .eq("user_id", userId)
+    .ilike("label", literal)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase
+      .from("price_book")
+      .update({ ...parsed.data, times_used: Number(existing.times_used) + 1 })
+      .eq("id", existing.id)
+      .eq("user_id", userId);
+  } else {
+    await supabase
+      .from("price_book")
+      .insert({ ...parsed.data, user_id: userId, times_used: 1 });
+  }
 }
 
-const statusSchema = z.enum(ORDER_STATUSES);
+export async function deletePriceBookEntry(entryId: string) {
+  const { supabase, user } = await requireUser();
+  if (!uuid.safeParse(entryId).success) return;
+  await supabase.from("price_book").delete().eq("id", entryId).eq("user_id", user.id);
+  revalidatePath("/pricebook");
+}
+
+const statusSchema = z.enum(ORDER_STATUSES).refine((v) => v !== "confirmed", {
+  message: "Only the customer can confirm an order.",
+});
 
 export async function setStatus(orderId: string, status: string) {
   const { supabase, user } = await requireUser();
   const parsed = statusSchema.safeParse(status);
   if (!parsed.success || !uuid.safeParse(orderId).success) return;
 
-  const patch: Record<string, unknown> = { status: parsed.data };
-  // Moving an order to confirmed by hand should still stamp the time, so the
-  // income record never shows a confirmed order with no date.
-  if (parsed.data === "confirmed") patch.confirmed_at = new Date().toISOString();
-
-  await supabase.from("orders").update(patch).eq("id", orderId).eq("user_id", user.id);
+  await supabase
+    .from("orders")
+    .update({ status: parsed.data })
+    .eq("id", orderId)
+    .eq("user_id", user.id);
   await supabase
     .from("order_events")
     .insert({ order_id: orderId, kind: `status:${parsed.data}`, actor: "seller" });
@@ -193,6 +226,19 @@ export async function recordPayment(orderId: string, form: FormData) {
     meta: { amount: parsed.data.amount },
   });
 
+  revalidatePath("/", "layout");
+}
+
+/** Sharing the link is the moment an order starts waiting on the customer. */
+export async function markSent(orderId: string) {
+  const { supabase, user } = await requireUser();
+  if (!uuid.safeParse(orderId).success) return;
+  await supabase
+    .from("orders")
+    .update({ status: "sent" })
+    .eq("id", orderId)
+    .eq("user_id", user.id)
+    .eq("status", "draft");
   revalidatePath("/", "layout");
 }
 

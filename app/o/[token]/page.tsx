@@ -7,7 +7,7 @@ import { LangSwitcher } from "@/components/prefs";
 import { rs } from "@/lib/format";
 import { getDict } from "@/lib/i18n";
 import { readPrefs } from "@/lib/server-prefs";
-import { createAnonClient } from "@/lib/supabase/anon";
+import { createClient } from "@/lib/supabase/server";
 import { uuid } from "@/lib/security/validate";
 import type { PublicOrder } from "@/lib/types";
 
@@ -28,7 +28,9 @@ export default async function PublicConfirmPage({
   const { locale } = await readPrefs();
   const t = getDict(locale);
 
-  const supabase = createAnonClient();
+  // The viewer's own session, if any, so the page knows when the seller is
+  // looking at her own link. Nobody gains any extra access by it.
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_public_order", {
     p_token: token,
   });
@@ -89,6 +91,7 @@ export default async function PublicConfirmPage({
             token={token}
             alreadyConfirmed={confirmed}
             expired={Boolean(order.expired)}
+            isOwner={Boolean(order.is_owner)}
           />
         </div>
 

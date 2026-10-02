@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button, Field, Notice, numberClass } from "@/components/ui";
 import { useT } from "@/components/prefs";
 import { rs } from "@/lib/format";
-import { STATUS_FLOW, statusLabel, type OrderStatus } from "@/lib/types";
+import { NEXT_BY_SELLER, statusLabel, type OrderStatus } from "@/lib/types";
 import {
   deleteOrder,
   recordPayment,
@@ -21,10 +21,7 @@ export function StatusControls({
 }) {
   const t = useT();
   const [pending, start] = useTransition();
-  const index = STATUS_FLOW.indexOf(status);
-  const next = index >= 0 && index < STATUS_FLOW.length - 1
-    ? STATUS_FLOW[index + 1]
-    : null;
+  const next = NEXT_BY_SELLER[status] ?? null;
 
   if (status === "cancelled") return null;
 
@@ -78,7 +75,7 @@ export function PaymentPanel({
           <dt className="text-[13.5px] text-soft">{t.stillOwed}</dt>
           <dd
             className={`ledger text-[14px] font-semibold ${
-              due > 0 ? "text-marigold" : "text-green"
+              due > 0 ? "text-marigold-ink" : "text-green"
             }`}
           >
             {due > 0 ? rs(due) : t.fullyPaid}

@@ -20,6 +20,22 @@ export const STATUS_FLOW: OrderStatus[] = [
   "paid",
 ];
 
+/**
+ * Where the seller's own button moves an order. "confirmed" never appears as
+ * a destination: only the customer can put an order there, and the database
+ * enforces that.
+ */
+export const NEXT_BY_SELLER: Partial<Record<OrderStatus, OrderStatus>> = {
+  draft: "sent",
+  sent: "in_progress",
+  confirmed: "in_progress",
+  in_progress: "delivered",
+  delivered: "paid",
+};
+
+/** Work the customer has agreed to, which is what counts as earned. */
+export const AGREED: OrderStatus[] = ["confirmed", "in_progress", "delivered", "paid"];
+
 export const PAYMENT_METHODS = [
   "Cash",
   "Easypaisa",
@@ -131,6 +147,8 @@ export type PublicOrder = {
   status: string;
   confirmed_at: string | null;
   expired: boolean;
+  /** True only when the seller herself is viewing the link while signed in. */
+  is_owner: boolean;
 };
 
 export function statusLabel(

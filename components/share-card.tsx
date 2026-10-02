@@ -4,6 +4,7 @@ import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "./ui";
 import { useT } from "./prefs";
+import { markSent } from "@/app/(app)/orders/actions";
 
 /**
  * How an order gets confirmed.
@@ -12,10 +13,12 @@ import { useT } from "./prefs";
  * code to show across a counter, a WhatsApp message, and a plain link.
  */
 export function ShareCard({
+  orderId,
   url,
   whatsappText,
   phone,
 }: {
+  orderId: string;
   url: string;
   whatsappText: string;
   phone?: string | null;
@@ -23,7 +26,11 @@ export function ShareCard({
   const t = useT();
   const [copied, setCopied] = useState(false);
 
+  // Sending the link is when the order starts waiting on the customer.
+  const shared = () => void markSent(orderId);
+
   const copy = async () => {
+    shared();
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -62,6 +69,7 @@ export function ShareCard({
           href={wa}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={shared}
           className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-[15px] font-semibold text-[#04300f] transition-[filter] hover:brightness-[0.97]"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
