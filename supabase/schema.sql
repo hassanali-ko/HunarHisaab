@@ -42,6 +42,7 @@ alter table public.profiles add column if not exists default_hourly_rate numeric
 alter table public.profiles add column if not exists default_profit_percent numeric not null default 25;
 alter table public.profiles add column if not exists onboarded_at timestamptz;
 alter table public.profiles add column if not exists updated_at timestamptz not null default now();
+alter table public.profiles add column if not exists locale text not null default 'roman';
 
 -- ----------------------------------------------------------------- customers
 
@@ -147,6 +148,36 @@ alter table public.orders add column if not exists parse_engine text;
 alter table public.orders add column if not exists share_expires_at timestamptz;
 alter table public.orders add column if not exists updated_at timestamptz not null default now();
 alter table public.orders add column if not exists customer_phone text;
+
+-- The first version stored quantity as a whole number, which cannot hold
+-- 2.5 kg, and left the money columns nullable.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'orders'
+       and column_name = 'quantity' and data_type = 'integer'
+  ) then
+    alter table public.orders alter column quantity type numeric;
+  end if;
+end $$;
+
+update public.orders set public_token = gen_random_uuid() where public_token is null;
+alter table public.orders alter column public_token set not null;
+
+update public.orders set
+  quantity = coalesce(quantity, 1),
+  unit_price = coalesce(unit_price, 0),
+  material_cost = coalesce(material_cost, 0),
+  labor_hours = coalesce(labor_hours, 0),
+  hourly_labor_value = coalesce(hourly_labor_value, 0),
+  packaging_cost = coalesce(packaging_cost, 0),
+  delivery_cost = coalesce(delivery_cost, 0),
+  other_cost = coalesce(other_cost, 0),
+  desired_profit_percent = coalesce(desired_profit_percent, 25)
+where quantity is null or unit_price is null or material_cost is null
+   or labor_hours is null or hourly_labor_value is null or packaging_cost is null
+   or delivery_cost is null or other_cost is null or desired_profit_percent is null;
 
 -- An install from before the pipeline existed stored status as free text.
 do $$
