@@ -25,14 +25,13 @@ export default async function Landing() {
           <Logo />
           <div className="flex items-center gap-2">
             <LangSwitcher />
-            <ButtonLink
-              href="/login"
-              variant="ghost"
-              size="sm"
-              className="hidden sm:inline-flex"
-            >
-              {t.login}
-            </ButtonLink>
+            {/* A display utility on the button itself loses to the
+                inline-flex in its own base class, so the wrapper does it. */}
+            <span className="hidden sm:contents">
+              <ButtonLink href="/login" variant="ghost" size="sm">
+                {t.login}
+              </ButtonLink>
+            </span>
           </div>
         </div>
       </header>

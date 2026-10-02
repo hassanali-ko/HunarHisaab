@@ -12,6 +12,7 @@ export default function NotFound() {
       </header>
       <main
         id="main"
+        dir="ltr"
         className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-5 pb-20 text-center"
       >
         <Star size={26} className="text-marigold" />

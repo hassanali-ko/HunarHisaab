@@ -12,7 +12,13 @@ export default function PrivacyPage() {
           <Logo />
         </Link>
       </header>
-      <main id="main" className="mx-auto w-full max-w-2xl flex-1 px-5 pb-16">
+      {/* These pages are written in English only, so they stay left to
+          right even when the rest of the app is set in Urdu. */}
+      <main
+        id="main"
+        dir="ltr"
+        className="mx-auto w-full max-w-2xl flex-1 px-5 pb-16 text-start"
+      >
         <h1 className="text-[2rem] leading-tight">Privacy</h1>
         <p className="mt-2 text-[14px] text-faint">
           Plain language, because a privacy page nobody can read protects nobody.
