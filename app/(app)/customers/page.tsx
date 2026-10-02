@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, Notice, StatusPill } from "@/components/ui";
+import { Card, Notice } from "@/components/ui";
 import { Star } from "@/components/marks";
 import { rs, shortDate } from "@/lib/format";
 import { getDict } from "@/lib/i18n";

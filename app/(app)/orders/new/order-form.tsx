@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -177,10 +177,6 @@ export function OrderForm({
       .slice(0, 3);
   }, [fields.item, priceBook]);
 
-  useEffect(() => {
-    if (tab === "manual") setReviewing(true);
-  }, [tab]);
-
   const flag = (ok: boolean | undefined) => (ok ? undefined : t.lowConfidence);
   const conf = (f: { confidence: number } | null | undefined) =>
     f ? f.confidence >= LOW : undefined;
@@ -204,7 +200,11 @@ export function OrderForm({
           <button
             key={key}
             type="button"
-            onClick={() => setTab(key)}
+            onClick={() => {
+              setTab(key);
+              // Typing it in means she is already past the reading step.
+              if (key === "manual") setReviewing(true);
+            }}
             aria-pressed={tab === key}
             className={`flex-1 rounded-lg px-3 py-2 transition-colors ${
               tab === key ? "bg-green text-white" : "text-soft hover:bg-green-wash"

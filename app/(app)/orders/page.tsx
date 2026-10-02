@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { OrderRow } from "@/components/order-row";
-import { Card, Notice } from "@/components/ui";
+import { Notice } from "@/components/ui";
 import { OrderFilters } from "./filters";
 import { getDict } from "@/lib/i18n";
 import { readPrefs } from "@/lib/server-prefs";
