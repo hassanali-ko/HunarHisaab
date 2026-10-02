@@ -24,7 +24,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Tests
+      - name: Tests, including the database security suite
         run: npm test
 
       - name: Build
@@ -35,43 +35,3 @@ jobs:
 
       - name: Known vulnerable dependencies
         run: npm audit --omit=dev --audit-level=high
-
-  database:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: hh
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Apply the schema twice, to prove it is repeatable
-        env:
-          PGPASSWORD: test
-        run: |
-          psql -h localhost -U postgres -d hh -v ON_ERROR_STOP=1 -q \
-            -f supabase/testing/supabase-stub.sql
-          psql -h localhost -U postgres -d hh -v ON_ERROR_STOP=1 -q \
-            -f supabase/schema.sql
-          psql -h localhost -U postgres -d hh -v ON_ERROR_STOP=1 -q \
-            -f supabase/schema.sql
-
-      - name: Security tests
-        env:
-          PGPASSWORD: test
-        run: |
-          out=$(psql -h localhost -U postgres -d hh -q \
-            -f supabase/security-tests.sql 2>&1)
-          echo "$out"
-          if echo "$out" | grep -q "FAIL"; then
-            echo "::error::A security assertion failed"
-            exit 1
-          fi

@@ -31,12 +31,33 @@ Every table has RLS on, scoped to `auth.uid()`. On top of that the schema
 revokes the broad table grants Supabase hands out by default and re-grants
 only what each role actually uses. `anon` gets nothing.
 
-`supabase/security-tests.sql` asserts all of this. It checks that a second
-seller sees none of the first seller's rows, that a cross tenant write is
-refused, that an anonymous visitor cannot read any table, that an unknown
-token returns nothing, that expired and cancelled links cannot be confirmed,
-and that the rate limiter actually stops the fourth call. Run it against a
-throwaway database before you ship a schema change.
+`tests/database.test.ts` asserts all of this against the real schema, run
+inside PGlite (Postgres compiled to WASM), so it needs no Docker and runs on
+every `npm test`. It checks that a second seller sees none of the first
+seller's rows, that a cross tenant write is refused, that an anonymous
+visitor cannot read any table, that an unknown token returns nothing, that
+expired and cancelled links cannot be confirmed, that the rate limiter stops
+the fourth call, and that deleting an account takes everything with it.
+
+### The confirmation cannot be faked
+
+This is the product's central claim, so the database defends it rather than
+trusting the application to.
+
+- `confirmed_at` can only be set inside `confirm_public_order`, which is the
+  customer tapping the link. A seller cannot set it on insert or update, even
+  by calling the API directly with her own session.
+- A signed in seller opening her own link is turned away, so she cannot
+  confirm her own order by accident while testing, or on purpose.
+- Once confirmed, the item, quantity and price the customer agreed to are
+  frozen. Her private cost figures can still change.
+- The event log only accepts `actor = 'seller'` from a seller, so she cannot
+  write an entry in the customer's name.
+
+None of this stops someone determined from opening the link in a private
+window and tapping it themselves. What it does is make the record mean what
+it says for everyone acting in good faith, and make tampering a deliberate
+act rather than a button.
 
 ### What a leaked confirmation link exposes
 
@@ -66,7 +87,10 @@ storing them in the clear.
 
 Counters live in Postgres, not in process memory, because this is expected to
 run as several short lived instances where an in memory counter protects
-nothing. Identifiers are hashed before storage, so no raw IP address is kept.
+nothing. Identifiers are keyed with an HMAC before storage, so no raw IP
+address is kept and nobody can compute another person's bucket to lock them
+out. The counting function rejects oversized buckets and clears out stale
+rows on its own.
 The limiter fails open: if the database cannot be reached, requests are not
 blocked, since the real protections are elsewhere.
 
@@ -90,6 +114,7 @@ npm audit --omit=dev     # no known vulnerable dependencies
 npm test                 # parser, pricing and translation tests
 ```
 
-For the database, start a throwaway Postgres and run, in order,
-`supabase/testing/supabase-stub.sql`, `supabase/schema.sql`, then
-`supabase/security-tests.sql`. Every line of output should say PASS.
+The database suite is part of `npm test`. It loads
+`supabase/testing/supabase-stub.sql` (stand ins for the parts Supabase
+provides) and then `supabase/schema.sql`, twice, to prove the schema is safe
+to re-run.

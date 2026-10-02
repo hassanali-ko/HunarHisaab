@@ -95,7 +95,9 @@ nothing stops working if you never add one.
 - **Price book.** The work you do repeatedly, with its costs saved, so the
   second cake is not priced from scratch.
 - **Customer confirmation.** A link or a QR code. They tap once. No account, no
-  app, no signup on their side.
+  app, no signup on their side. The database will not let the seller confirm
+  her own order, and once confirmed, the agreed item, quantity and price
+  cannot be edited.
 - **Payments.** Advance received, balance outstanding, who still owes you what.
 - **Due soon.** What is due this week, with overdue flagged.
 - **Income record.** Confirmed work, month by month, exportable as CSV or
@@ -152,10 +154,14 @@ the `anon` role holds no table privileges at all. The one public page reaches
 the database through two `security definer` functions that take a single
 token, so a leaked link exposes one order summary and nothing else.
 
-`supabase/security-tests.sql` asserts all of that against a throwaway
-database, including that a second seller sees nothing of the first, that an
-anonymous visitor cannot read any table, and that expired or cancelled links
-cannot be confirmed. CI runs it on every push.
+The confirmation is guarded in the database itself. Only the customer
+tapping the link can set it, a seller opening her own link is turned away,
+and the terms she was confirmed on are frozen afterwards. An income record
+anyone can edit is not a record.
+
+`tests/database.test.ts` asserts all of that against the real schema using
+PGlite, which is Postgres compiled to WASM. No Docker, no network, and it
+runs on every `npm test`.
 
 ## What this is not
 
@@ -171,7 +177,7 @@ touch.
 ## Tests
 
 ```bash
-npm test          # parser, pricing, translations
+npm test          # parser, pricing, translations, and the database rules
 npm run lint
 npm run build
 ```

@@ -24,8 +24,9 @@ npm run lint
 npm run build
 ```
 
-If you touched the schema, also run the security tests described in
-`SECURITY.md`. A failing line there is a blocker.
+`npm test` includes the database security suite, so a schema change that
+weakens a boundary fails right there. Treat any failure in
+`tests/database.test.ts` as a blocker.
 
 ## Things worth knowing
 

@@ -168,6 +168,61 @@ begin
   end if;
 end $$;
 
+-- An order can only read "confirmed" if a customer actually confirmed it.
+do $$ begin
+  alter table public.orders
+    add constraint orders_confirmed_needs_time
+    check (status <> 'confirmed' or confirmed_at is not null) not valid;
+exception when duplicate_object then null;
+end $$;
+
+-- The confirmation is the product's central claim, so the database defends it
+-- rather than trusting the application to:
+--
+--   * confirmed_at can only be set inside confirm_public_order, which is the
+--     customer tapping the link. A seller cannot set it on insert or update,
+--     even by calling the API directly with her own session.
+--   * once confirmed, the item, quantity and price the customer agreed to are
+--     frozen. Her private cost figures can still change.
+create or replace function public.guard_confirmation()
+returns trigger
+language plpgsql
+as $$
+begin
+  if coalesce(current_setting('hunarhisaab.confirming', true), '') = 'on' then
+    return new;
+  end if;
+
+  if tg_op = 'INSERT' then
+    if new.confirmed_at is not null then
+      raise exception 'Only the customer can confirm an order.'
+        using errcode = 'check_violation';
+    end if;
+    return new;
+  end if;
+
+  if new.confirmed_at is distinct from old.confirmed_at then
+    raise exception 'Only the customer can confirm an order.'
+      using errcode = 'check_violation';
+  end if;
+
+  if old.confirmed_at is not null and (
+       new.item is distinct from old.item
+    or new.quantity is distinct from old.quantity
+    or new.unit_price is distinct from old.unit_price
+  ) then
+    raise exception 'The customer confirmed this item, quantity and price, so they can no longer change.'
+      using errcode = 'check_violation';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists orders_guard_confirmation on public.orders;
+create trigger orders_guard_confirmation before insert or update on public.orders
+  for each row execute function public.guard_confirmation();
+
 create index if not exists orders_user_idx on public.orders(user_id, created_at desc);
 create index if not exists orders_status_idx on public.orders(user_id, status);
 create index if not exists orders_deadline_idx on public.orders(user_id, deadline_date);
@@ -295,7 +350,8 @@ create policy order_events_select_own on public.order_events
 drop policy if exists order_events_insert_own on public.order_events;
 create policy order_events_insert_own on public.order_events
   for insert with check (
-    exists (
+    actor = 'seller'
+    and exists (
       select 1 from public.orders o
       where o.id = order_events.order_id and o.user_id = auth.uid()
     )
@@ -331,6 +387,8 @@ revoke all on public.rate_limits from anon, authenticated;
 -- The public confirmation path
 -- ===========================================================================
 
+drop function if exists public.get_public_order(uuid);
+
 -- Returns the handful of fields a buyer needs to recognise their own order.
 -- No contact details, no cost breakdown, no identifiers.
 create or replace function public.get_public_order(p_token uuid)
@@ -346,7 +404,8 @@ returns table (
   payment_method text,
   status text,
   confirmed_at timestamptz,
-  expired boolean
+  expired boolean,
+  is_owner boolean
 )
 language sql
 security definer
@@ -365,7 +424,8 @@ as $$
     o.payment_method,
     o.status::text,
     o.confirmed_at,
-    (o.share_expires_at is not null and o.share_expires_at < now())
+    (o.share_expires_at is not null and o.share_expires_at < now()),
+    (auth.uid() is not null and auth.uid() = o.user_id)
   from public.orders o
   join public.profiles p on p.id = o.user_id
   where o.public_token = p_token
@@ -406,14 +466,26 @@ begin
     return;
   end if;
 
+  -- The seller holds the link too. Confirming her own order would make the
+  -- record worthless, so a signed in owner is turned away.
+  if auth.uid() is not null and auth.uid() = v_order.user_id then
+    return query select false, 'own_order';
+    return;
+  end if;
+
+  perform set_config('hunarhisaab.confirming', 'on', true);
+
   update public.orders
      set status = 'confirmed',
          confirmed_at = now(),
          updated_at = now()
    where id = v_order.id;
 
-  insert into public.order_events (order_id, kind, actor)
-  values (v_order.id, 'confirmed', 'customer');
+  perform set_config('hunarhisaab.confirming', 'off', true);
+
+  insert into public.order_events (order_id, kind, actor, meta)
+  values (v_order.id, 'confirmed', 'customer',
+          jsonb_build_object('signed_in', auth.uid() is not null));
 
   return query select true, 'confirmed';
 end;
@@ -442,6 +514,17 @@ declare
   v_now timestamptz := now();
   v_hits integer;
 begin
+  -- Anyone holding the anon key can call this, so keep what they can write
+  -- small and make sure the table cannot grow without bound.
+  if p_bucket is null or length(p_bucket) > 100
+     or p_limit < 1 or p_window_seconds < 1 or p_window_seconds > 86400 then
+    return false;
+  end if;
+
+  if random() < 0.02 then
+    delete from public.rate_limits where window_start < v_now - interval '1 day';
+  end if;
+
   insert into public.rate_limits (bucket, window_start, hits)
   values (p_bucket, v_now, 1)
   on conflict (bucket) do update
@@ -487,6 +570,8 @@ begin
   if v_count > 0 then
     return 0;
   end if;
+
+  perform set_config('hunarhisaab.confirming', 'on', true);
 
   insert into public.price_book (user_id, label, category, unit, material_cost, labor_hours, packaging_cost, last_price, times_used)
   values
@@ -575,6 +660,7 @@ begin
     now() - interval '1 day'
   );
 
+  perform set_config('hunarhisaab.confirming', 'off', true);
   return 5;
 end;
 $$;
@@ -600,6 +686,23 @@ $$;
 
 revoke all on function public.clear_all_data() from public;
 grant execute on function public.clear_all_data() to authenticated;
+
+-- Removes the account itself. Everything else cascades from auth.users.
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare v_user uuid := auth.uid();
+begin
+  if v_user is null then raise exception 'not signed in'; end if;
+  delete from auth.users where id = v_user;
+end;
+$$;
+
+revoke all on function public.delete_my_account() from public;
+grant execute on function public.delete_my_account() to authenticated;
 
 -- ===========================================================================
 -- Triggers
