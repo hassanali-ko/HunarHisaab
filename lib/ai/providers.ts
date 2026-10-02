@@ -162,9 +162,9 @@ async function callOpenAI(
       "Content-Type": "application/json",
       Authorization: `Bearer ${key}`,
     },
+    // GPT-5 models only accept the default temperature, so none is sent.
     body: JSON.stringify({
       model,
-      temperature: 0,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: SYSTEM },

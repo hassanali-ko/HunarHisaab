@@ -15,6 +15,7 @@ import { SampleDataButton } from "@/components/sample-data";
 import { clearAllData } from "@/app/(app)/data-actions";
 import { signOut } from "@/app/login/actions";
 import {
+  deleteAccount,
   exportEverything,
   removeAiKey,
   saveAiKey,
@@ -262,6 +263,7 @@ export function DataPanel({ hasData }: { hasData: boolean }) {
   const t = useT();
   const [busy, start] = useTransition();
   const [confirmText, setConfirmText] = useState("");
+  const [goodbye, setGoodbye] = useState("");
 
   const doExport = () =>
     start(async () => {
@@ -327,6 +329,31 @@ export function DataPanel({ hasData }: { hasData: boolean }) {
               }
             >
               {t.delete}
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-terracotta-edge p-3.5">
+          <p className="text-[14px] font-medium text-terracotta">
+            {t.setDeleteAccount}
+          </p>
+          <p className="mt-0.5 text-[13px] text-soft">{t.setDeleteAccountSub}</p>
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            <input
+              value={goodbye}
+              onChange={(e) => setGoodbye(e.target.value)}
+              placeholder={t.setDeleteConfirm}
+              aria-label={t.setDeleteConfirm}
+              className={`${inputClass} latin max-w-[230px]`}
+            />
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              disabled={goodbye !== "DELETE" || busy}
+              onClick={() => start(() => void deleteAccount(goodbye))}
+            >
+              {t.setDeleteAccount}
             </Button>
           </div>
         </div>

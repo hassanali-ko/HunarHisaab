@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/data";
@@ -55,6 +56,11 @@ export async function saveAiKey(
 
   const { provider, model, api_key } = parsed.data;
   if (!isProviderId(provider)) return { error: "Unknown provider." };
+  // Only models we have actually offered, so the value cannot be used to
+  // steer a request somewhere unexpected.
+  if (!PROVIDERS[provider].models.includes(model)) {
+    return { error: "Pick one of the listed models." };
+  }
 
   // A cheap shape check catches a pasted mistake before a failed API call.
   if (!PROVIDERS[provider].keyPattern.test(api_key)) {
@@ -107,4 +113,15 @@ export async function exportEverything(): Promise<string> {
     null,
     2,
   );
+}
+
+/** Removes the account and, by cascade, everything in it. */
+export async function deleteAccount(confirmation: string) {
+  if (confirmation !== "DELETE") return;
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) return;
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+  redirect("/");
 }

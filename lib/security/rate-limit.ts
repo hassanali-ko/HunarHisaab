@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { createAnonClient } from "@/lib/supabase/anon";
 
 /**
@@ -29,8 +29,17 @@ export const LIMITS = {
 
 export type LimitName = keyof typeof LIMITS;
 
+/**
+ * Buckets are keyed with an HMAC, not a bare hash. The counting function is
+ * reachable with the public anon key, so with an unsalted hash anyone who
+ * knew a person's IP could compute her bucket and lock her out of signing in.
+ * The secret comes from APP_ENCRYPTION_KEY when set; otherwise each instance
+ * makes its own, which only means instances do not share counts.
+ */
+const SALT = process.env.APP_ENCRYPTION_KEY || randomBytes(32).toString("base64");
+
 function hashId(value: string): string {
-  return createHash("sha256").update(value).digest("base64url").slice(0, 24);
+  return createHmac("sha256", SALT).update(value).digest("base64url").slice(0, 24);
 }
 
 /**
