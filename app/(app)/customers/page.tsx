@@ -6,7 +6,7 @@ import { rs, shortDate } from "@/lib/format";
 import { getDict } from "@/lib/i18n";
 import { readPrefs } from "@/lib/server-prefs";
 import { summarise } from "@/lib/pricing";
-import { getCustomers, getOrders, requireOnboarded } from "@/lib/data";
+import { EARNED, getCustomers, getOrders, requireOnboarded } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Customers" };
 export const dynamic = "force-dynamic";
@@ -27,7 +27,8 @@ export default async function CustomersPage() {
       const theirs = orders.filter(
         (o) => o.customer_id === c.id && o.status !== "cancelled",
       );
-      const sum = summarise(theirs);
+      // Spent and owed only count agreed work; a draft has cost her nothing yet.
+      const sum = summarise(theirs.filter((o) => EARNED.includes(o.status)));
       return {
         customer: c,
         count: theirs.length,
@@ -88,7 +89,7 @@ export default async function CustomersPage() {
                       {rs(spent)}
                     </div>
                     {outstanding > 0 ? (
-                      <div className="ledger mt-0.5 text-[11px] text-marigold">
+                      <div className="ledger mt-0.5 text-[11px] text-marigold-ink">
                         {rs(outstanding)} {t.stillOwed.toLowerCase()}
                       </div>
                     ) : null}

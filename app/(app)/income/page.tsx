@@ -6,7 +6,7 @@ import { longDate, pkr, rs, rsShort } from "@/lib/format";
 import { getDict } from "@/lib/i18n";
 import { readPrefs } from "@/lib/server-prefs";
 import { calculatePricing, summarise } from "@/lib/pricing";
-import { EARNED, getOrders, requireOnboarded } from "@/lib/data";
+import { getOrders, requireOnboarded } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Income record" };
 export const dynamic = "force-dynamic";
@@ -17,7 +17,9 @@ export default async function IncomePage() {
   const t = getDict(locale);
 
   const orders = await getOrders(supabase, user.id);
-  const earned = orders.filter((o) => EARNED.includes(o.status));
+  // The record claims "confirmed by your customers", so it holds exactly that:
+  // orders a customer confirmed through the link. Nothing the seller can set.
+  const earned = orders.filter((o) => o.confirmed_at && o.status !== "cancelled");
   const total = summarise(earned);
 
   // Group by calendar month, newest first.

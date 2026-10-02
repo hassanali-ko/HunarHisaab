@@ -4,7 +4,7 @@ import { Star } from "./marks";
 import { daysUntil, rs, shortDate } from "@/lib/format";
 import { calculatePricing } from "@/lib/pricing";
 import type { Dict } from "@/lib/i18n";
-import { statusLabel, type Order } from "@/lib/types";
+import { AGREED, statusLabel, type Order } from "@/lib/types";
 
 export function OrderRow({ order, t }: { order: Order; t: Dict }) {
   const p = calculatePricing(order);
@@ -48,7 +48,7 @@ export function OrderRow({ order, t }: { order: Order; t: Dict }) {
               className={`ms-1 rounded-full px-1.5 py-0.5 text-[10.5px] font-medium ${
                 overdue
                   ? "bg-terracotta-wash text-terracotta"
-                  : "bg-marigold-wash text-[#7a5a12]"
+                  : "bg-marigold-wash text-marigold-ink"
               }`}
             >
               {overdue ? t.dashOverdue : t.dashDueSoon}
@@ -59,8 +59,9 @@ export function OrderRow({ order, t }: { order: Order; t: Dict }) {
 
       <div className="shrink-0 text-end">
         <div className="ledger text-[14.5px] font-semibold">{rs(p.revenue)}</div>
-        {p.balanceDue > 0 && order.status !== "cancelled" ? (
-          <div className="ledger mt-0.5 text-[11px] text-marigold">
+        {/* Nothing is owed on a draft; it only counts once she has a deal. */}
+        {p.balanceDue > 0 && AGREED.includes(order.status) ? (
+          <div className="ledger mt-0.5 text-[11px] text-marigold-ink">
             {rs(p.balanceDue)} {t.stillOwed.toLowerCase()}
           </div>
         ) : null}

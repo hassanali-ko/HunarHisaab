@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Card, Line, Notice } from "@/components/ui";
+import { RemoveEntry } from "./remove";
 import { rs } from "@/lib/format";
 import { getDict } from "@/lib/i18n";
 import { readPrefs } from "@/lib/server-prefs";
@@ -49,6 +50,9 @@ export default async function PriceBookPage() {
                 ) : null}
                 <Line label={t.priceBookLast} value={rs(e.last_price)} strong />
               </dl>
+              <div className="mt-3 text-end">
+                <RemoveEntry id={e.id} label={t.priceBookDelete} />
+              </div>
             </Card>
           ))}
         </div>

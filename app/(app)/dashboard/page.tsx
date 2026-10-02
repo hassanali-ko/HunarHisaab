@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AutoRefresh } from "@/components/auto-refresh";
 import Link from "next/link";
 import { OrderRow } from "@/components/order-row";
 import { ButtonLink, Card, Notice, Sheet, Stat } from "@/components/ui";
@@ -24,11 +25,15 @@ export default async function Dashboard() {
   monthStart.setHours(0, 0, 0, 0);
 
   const live = orders.filter((o) => o.status !== "cancelled");
-  const thisMonth = live.filter((o) => new Date(o.created_at) >= monthStart);
-  const earned = live.filter((o) => EARNED.includes(o.status));
+  // Only agreed work counts as earned. A draft is a hope, not income.
+  const agreed = live.filter((o) => EARNED.includes(o.status));
+  const thisMonth = agreed.filter(
+    (o) => new Date(o.confirmed_at ?? o.created_at) >= monthStart,
+  );
+  const customerConfirmed = agreed.filter((o) => o.confirmed_at);
 
   const month = summarise(thisMonth);
-  const all = summarise(live);
+  const owed = summarise(agreed);
 
   const dueSoon = live
     .filter((o) => o.status !== "paid" && o.deadline_date)
@@ -64,6 +69,7 @@ export default async function Dashboard() {
 
   return (
     <>
+      <AutoRefresh />
       <div>
         <h1 className="text-[1.75rem] leading-tight">{hello}</h1>
         <p className="mt-1 text-[14px] text-soft">
@@ -81,9 +87,9 @@ export default async function Dashboard() {
         <Stat label={t.dashProfit} value={rs(month.profit)} sub={t.dashProfitSub} />
         <Stat
           label={t.dashOutstanding}
-          value={rs(all.outstanding)}
+          value={rs(owed.outstanding)}
           sub={t.dashOutstandingSub}
-          tone={all.outstanding > 0 ? "marigold" : "plain"}
+          tone={owed.outstanding > 0 ? "marigold" : "plain"}
         />
         <Stat
           label={t.dashHourly}
@@ -122,10 +128,12 @@ export default async function Dashboard() {
         </Card>
       </Sheet>
 
-      {earned.length > 0 ? (
+      <p className="mt-2 px-1 text-[11.5px] text-faint">{t.earnedNote}</p>
+
+      {customerConfirmed.length > 0 ? (
         <Notice tone="info" className="mt-6">
           <span className="ledger font-medium text-ink">
-            {rs(summarise(earned).revenue)}
+            {rs(summarise(customerConfirmed).revenue)}
           </span>{" "}
           {t.incomeConfirmedTotal.toLowerCase()}.{" "}
           <Link
