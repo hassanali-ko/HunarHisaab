@@ -17,8 +17,8 @@
   --paper-raised: #ffffff;
   --paper-sunk: #f3ede1;
   --ink: #16201b;
-  --ink-soft: #5d6b63;
-  --ink-faint: #8b968f;
+  --ink-soft: #4d5a53;
+  --ink-faint: #626c66;
   --rule: #e4dccd;
   --rule-strong: #d3c8b2;
 
@@ -30,12 +30,15 @@
   --green-deep: #01411c;
   --green-wash: #e6f1ea;
   --green-edge: #b9d7c6;
+  --on-green: #ffffff;
 
   --marigold: #e0a228;
+  /* marigold for words; the brighter one is for stars and fills only */
+  --marigold-ink: #8a6110;
   --marigold-wash: #fdf3df;
   --marigold-edge: #f0d9a4;
 
-  --terracotta: #cf5330;
+  --terracotta: #b3421f;
   --terracotta-wash: #fceee9;
   --terracotta-edge: #f3c7b7;
 
@@ -51,6 +54,9 @@
   --radius-lg: 20px;
 }
 
+/* Dark applies when chosen outright, or when the phone is dark and nothing
+   has been chosen. Doing this in CSS means a server render can never fight
+   a script over which theme is showing. */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
@@ -59,7 +65,7 @@
   --paper-sunk: #0c0f0a;
   --ink: #eee8da;
   --ink-soft: #a3ad9f;
-  --ink-faint: #76806f;
+  --ink-faint: #8a9483;
   --rule: #2a3126;
   --rule-strong: #3b4435;
 
@@ -69,8 +75,10 @@
   --green-deep: #8ed6ab;
   --green-wash: #16261d;
   --green-edge: #2d4a38;
+  --on-green: #0b1a10;
 
   --marigold: #e8b65a;
+  --marigold-ink: #e8b65a;
   --marigold-wash: #2a2212;
   --marigold-edge: #4a3c1c;
 
@@ -84,6 +92,45 @@
   --lift-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --lift-2: 0 2px 10px -2px rgba(0, 0, 0, 0.5);
   --lift-3: 0 12px 32px -12px rgba(0, 0, 0, 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  
+    --paper: #11150f;
+    --paper-raised: #191e17;
+    --paper-sunk: #0c0f0a;
+    --ink: #eee8da;
+    --ink-soft: #a3ad9f;
+    --ink-faint: #8a9483;
+    --rule: #2a3126;
+    --rule-strong: #3b4435;
+  
+    --ruling: rgba(168, 214, 184, 0.05);
+  
+    --green: #4fb37b;
+    --green-deep: #8ed6ab;
+    --green-wash: #16261d;
+    --green-edge: #2d4a38;
+  --on-green: #0b1a10;
+  
+    --marigold: #e8b65a;
+  --marigold-ink: #e8b65a;
+    --marigold-wash: #2a2212;
+    --marigold-edge: #4a3c1c;
+  
+    --terracotta: #e87a56;
+    --terracotta-wash: #2c1811;
+    --terracotta-edge: #4d2a1c;
+  
+    --indigo: #8fa8d0;
+    --indigo-wash: #19202c;
+  
+    --lift-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --lift-2: 0 2px 10px -2px rgba(0, 0, 0, 0.5);
+    --lift-3: 0 12px 32px -12px rgba(0, 0, 0, 0.7);
+  }
 }
 
 @theme inline {
@@ -100,8 +147,10 @@
   --color-green-deep: var(--green-deep);
   --color-green-wash: var(--green-wash);
   --color-green-edge: var(--green-edge);
+  --color-on-green: var(--on-green);
 
   --color-marigold: var(--marigold);
+  --color-marigold-ink: var(--marigold-ink);
   --color-marigold-wash: var(--marigold-wash);
   --color-marigold-edge: var(--marigold-edge);
 
@@ -217,6 +266,20 @@ h1, h2, h3, .display {
   mask-size: 12px 100%;
 }
 
+/* The mark is dark green, which vanishes on a dark page, so in dark mode it
+   sits on a small square of paper, the way a stamp would. */
+.mark-chip {
+  border-radius: 10px;
+}
+:root[data-theme="dark"] .mark-chip {
+  background: #f3ede1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mark-chip {
+    background: #f3ede1;
+  }
+}
+
 /* ------------------------------------------------------------- utilities */
 
 .paper-card {
@@ -244,6 +307,11 @@ h1, h2, h3, .display {
 }
 :root[data-theme="dark"] .tape {
   color: var(--marigold);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .tape {
+    color: var(--marigold);
+  }
 }
 
 /* ------------------------------------------------------------ urdu script */

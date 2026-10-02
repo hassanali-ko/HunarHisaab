@@ -34,7 +34,7 @@ describe("translations", () => {
   it("holds the no em dash rule across every language", () => {
     for (const [name, dict] of Object.entries(dicts)) {
       for (const [key, value] of Object.entries(dict)) {
-        expect(value.includes("—"), `${name}.${key} has an em dash`).toBe(false);
+        expect(value.includes("\u2014"), `${name}.${key} has an em dash`).toBe(false);
       }
     }
   });

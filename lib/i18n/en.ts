@@ -343,6 +343,14 @@ export const en = {
   pubFootnote:
     "Confirming records that you agreed to this order. It takes no payment and needs no account.",
   pubPoweredBy: "Record kept with HunarHisaab",
+
+  editOrder: "Edit",
+  editOrderTitle: "Edit order",
+  lockedByConfirm: "Your customer confirmed the item, quantity and price, so those stay exactly as they agreed. Your own cost figures can still change.",
+  ownOrderNotice: "This is your own order. Send the link to your customer so they can confirm it.",
+  setDeleteConfirm: "Type DELETE to remove your account for good",
+  priceBookDelete: "Remove",
+  earnedNote: "Counts orders your customer agreed to. Drafts are left out.",
 } as const;
 
 export type Dict = Record<keyof typeof en, string>;

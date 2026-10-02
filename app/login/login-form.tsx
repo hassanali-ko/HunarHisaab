@@ -35,7 +35,7 @@ export function LoginForm({ configured }: { configured: boolean }) {
             aria-selected={mode === key}
             onClick={() => setMode(key)}
             className={`flex-1 rounded-lg px-3 py-2 transition-colors ${
-              mode === key ? "bg-green text-white" : "text-soft hover:bg-green-wash"
+              mode === key ? "bg-green text-on-green" : "text-soft hover:bg-green-wash"
             }`}
           >
             {label}

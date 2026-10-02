@@ -329,4 +329,12 @@ export const roman: Dict = {
   pubFootnote:
     "Tasdeeq se sirf yeh record hota hai ke aap is order par raazi hain. Na koi payment li jati hai, na account chahiye.",
   pubPoweredBy: "Record HunarHisaab par rakha gaya",
+
+  editOrder: "Tabdeeli",
+  editOrderTitle: "Order mein tabdeeli",
+  lockedByConfirm: "Customer ne cheez, tadaad aur qeemat ki tasdeeq kar di hai, is liye yeh wahi rahenge jis par baat hui. Aapki apni lagat badal sakti hai.",
+  ownOrderNotice: "Yeh aapka apna order hai. Link apne customer ko bhejein taake woh tasdeeq kar sakein.",
+  setDeleteConfirm: "Account hamesha ke liye hatane ke liye DELETE likhein",
+  priceBookDelete: "Hata dein",
+  earnedNote: "Sirf woh orders jin par customer raazi hua. Drafts shamil nahi.",
 };

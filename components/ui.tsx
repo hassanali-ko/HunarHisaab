@@ -64,7 +64,7 @@ export function Stat({
   const toneClass = {
     plain: "text-ink",
     green: "text-green",
-    marigold: "text-marigold",
+    marigold: "text-marigold-ink",
     terracotta: "text-terracotta",
   }[tone];
 
@@ -89,11 +89,11 @@ export function Stat({
 
 const STATUS_TONE: Record<string, string> = {
   draft: "bg-sunk text-soft border-rule",
-  sent: "bg-marigold-wash text-marigold border-marigold-edge",
+  sent: "bg-marigold-wash text-marigold-ink border-marigold-edge",
   confirmed: "bg-green-wash text-green border-green-edge",
   in_progress: "bg-indigo-wash text-indigo border-indigo/25",
   delivered: "bg-green-wash text-green border-green-edge",
-  paid: "bg-green text-white border-green",
+  paid: "bg-green text-on-green border-green",
   cancelled: "bg-sunk text-faint border-rule line-through",
 };
 
@@ -126,7 +126,7 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-[background-color,border-color,color,transform] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-55";
 
 const variants: Record<string, string> = {
-  primary: "bg-green text-white hover:bg-green-deep",
+  primary: "bg-green text-on-green hover:bg-green-deep",
   marigold: "bg-marigold text-[#3a2a06] hover:brightness-[0.97]",
   outline: "border border-rule-strong bg-raised text-ink hover:bg-green-wash",
   ghost: "text-green hover:bg-green-wash",
@@ -230,7 +230,7 @@ export function Notice({
   const tones = {
     info: "bg-sunk border-rule text-soft",
     good: "bg-green-wash border-green-edge text-green-deep",
-    warn: "bg-marigold-wash border-marigold-edge text-[#7a5a12]",
+    warn: "bg-marigold-wash border-marigold-edge text-marigold-ink",
     bad: "bg-terracotta-wash border-terracotta-edge text-terracotta",
   }[tone];
   return (

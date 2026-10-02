@@ -63,7 +63,7 @@ export function LangSwitcher({ className = "" }: { className?: string }) {
           aria-label={l.label}
           className={`whitespace-nowrap rounded-full px-2 py-1 transition-colors ${
             current === l.code
-              ? "bg-green text-white"
+              ? "bg-green text-on-green"
               : "text-soft hover:bg-green-wash"
           }`}
         >
@@ -99,7 +99,7 @@ export function ThemeSwitcher({ labels }: { labels: [string, string, string] }) 
           }}
           aria-pressed={current === value}
           className={`flex-1 rounded-lg px-3 py-1.5 transition-colors ${
-            current === value ? "bg-green text-white" : "text-soft hover:bg-green-wash"
+            current === value ? "bg-green text-on-green" : "text-soft hover:bg-green-wash"
           }`}
         >
           {label}

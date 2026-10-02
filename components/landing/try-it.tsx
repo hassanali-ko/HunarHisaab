@@ -29,10 +29,10 @@ type Highlight = { span: Span; key: string };
 const FIELD_CHIP: Record<string, string> = {
   item: "bg-green-wash text-green-deep",
   quantity: "bg-indigo-wash text-indigo",
-  price: "bg-marigold-wash text-[#7a5a12]",
+  price: "bg-marigold-wash text-marigold-ink",
   due: "bg-terracotta-wash text-terracotta",
   area: "bg-green-wash text-green-deep",
-  pay: "bg-marigold-wash text-[#7a5a12]",
+  pay: "bg-marigold-wash text-marigold-ink",
 };
 
 /**
@@ -193,7 +193,7 @@ export function TryIt() {
                     {value ? (
                       <span className={`rounded px-1 ${FIELD_CHIP[key]}`}>{value}</span>
                     ) : (
-                      "—".replace("—", "·")
+                      "\u00b7"
                     )}
                   </dd>
                 </div>

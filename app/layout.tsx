@@ -65,19 +65,6 @@ export const viewport: Viewport = {
   ],
 };
 
-/**
- * Appearance is resolved before paint. Reading the cookie on the server covers
- * an explicit choice; this tiny script only handles "match my phone", which
- * nothing on the server can know.
- */
-const THEME_BOOTSTRAP = `
-(function(){try{
-  var el=document.documentElement;
-  if(el.dataset.theme) return;
-  var dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-  el.dataset.theme=dark?'dark':'light';
-}catch(e){}})();
-`;
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const { locale, theme } = await readPrefs();
@@ -91,15 +78,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-locale={locale}
       {...(theme === "system" ? {} : { "data-theme": theme })}
       className={`${inter.variable} ${fraunces.variable} ${nastaliq.variable} h-full antialiased`}
-      suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
-      </head>
       <body className="flex min-h-full flex-col">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-green focus:px-4 focus:py-2 focus:text-white"
+          className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-green focus:px-4 focus:py-2 focus:text-on-green"
         >
           Skip to content
         </a>

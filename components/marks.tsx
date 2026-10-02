@@ -68,7 +68,7 @@ export function Logo({
         width={72}
         height={72}
         priority
-        className="h-9 w-9 shrink-0 object-contain"
+        className="mark-chip h-9 w-9 shrink-0 object-contain p-0.5"
       />
       <span
         className={`latin whitespace-nowrap text-[17px] font-semibold tracking-tight ${
