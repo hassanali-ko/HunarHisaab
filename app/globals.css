@@ -1,0 +1,316 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Khata
+   ---------------------------------------------------------------------------
+   The whole interface is built on one idea: the register a small business
+   actually keeps. Ruled paper, a running stitch where a seam would be, a
+   block print star for punctuation, and numbers set like a ledger total.
+   Every motif here is lifted from the mark itself.
+   ======================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* paper and ink */
+  --paper: #faf6ee;
+  --paper-raised: #ffffff;
+  --paper-sunk: #f3ede1;
+  --ink: #16201b;
+  --ink-soft: #5d6b63;
+  --ink-faint: #8b968f;
+  --rule: #e4dccd;
+  --rule-strong: #d3c8b2;
+
+  /* the register's own ruling, kept almost invisible */
+  --ruling: rgba(14, 107, 58, 0.055);
+
+  /* brand */
+  --green: #0e6b3a;
+  --green-deep: #01411c;
+  --green-wash: #e6f1ea;
+  --green-edge: #b9d7c6;
+
+  --marigold: #e0a228;
+  --marigold-wash: #fdf3df;
+  --marigold-edge: #f0d9a4;
+
+  --terracotta: #cf5330;
+  --terracotta-wash: #fceee9;
+  --terracotta-edge: #f3c7b7;
+
+  --indigo: #2f4b7c;
+  --indigo-wash: #eaeef5;
+
+  /* elevation, kept shallow so it reads as paper not glass */
+  --lift-1: 0 1px 2px rgba(22, 32, 27, 0.05);
+  --lift-2: 0 2px 10px -2px rgba(22, 32, 27, 0.09);
+  --lift-3: 0 12px 32px -12px rgba(22, 32, 27, 0.22);
+
+  --radius: 14px;
+  --radius-lg: 20px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper: #11150f;
+  --paper-raised: #191e17;
+  --paper-sunk: #0c0f0a;
+  --ink: #eee8da;
+  --ink-soft: #a3ad9f;
+  --ink-faint: #76806f;
+  --rule: #2a3126;
+  --rule-strong: #3b4435;
+
+  --ruling: rgba(168, 214, 184, 0.05);
+
+  --green: #4fb37b;
+  --green-deep: #8ed6ab;
+  --green-wash: #16261d;
+  --green-edge: #2d4a38;
+
+  --marigold: #e8b65a;
+  --marigold-wash: #2a2212;
+  --marigold-edge: #4a3c1c;
+
+  --terracotta: #e87a56;
+  --terracotta-wash: #2c1811;
+  --terracotta-edge: #4d2a1c;
+
+  --indigo: #8fa8d0;
+  --indigo-wash: #19202c;
+
+  --lift-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --lift-2: 0 2px 10px -2px rgba(0, 0, 0, 0.5);
+  --lift-3: 0 12px 32px -12px rgba(0, 0, 0, 0.7);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-raised: var(--paper-raised);
+  --color-sunk: var(--paper-sunk);
+  --color-ink: var(--ink);
+  --color-soft: var(--ink-soft);
+  --color-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+
+  --color-green: var(--green);
+  --color-green-deep: var(--green-deep);
+  --color-green-wash: var(--green-wash);
+  --color-green-edge: var(--green-edge);
+
+  --color-marigold: var(--marigold);
+  --color-marigold-wash: var(--marigold-wash);
+  --color-marigold-edge: var(--marigold-edge);
+
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-wash: var(--terracotta-wash);
+  --color-terracotta-edge: var(--terracotta-edge);
+
+  --color-indigo: var(--indigo);
+  --color-indigo-wash: var(--indigo-wash);
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-urdu: var(--font-nastaliq), serif;
+
+  --radius-card: var(--radius);
+  --radius-sheet: var(--radius-lg);
+
+  --shadow-lift1: var(--lift-1);
+  --shadow-lift2: var(--lift-2);
+  --shadow-lift3: var(--lift-3);
+}
+
+/* ------------------------------------------------------------------ base */
+
+* {
+  border-color: var(--rule);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: "cv05" 1, "ss01" 1;
+  /* The register ruling. Faint enough to feel like paper, not a grid. */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    var(--ruling) 31px,
+    var(--ruling) 32px
+  );
+}
+
+h1, h2, h3, .display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-variation-settings: "SOFT" 20, "WONK" 1;
+}
+
+/* Amounts are the whole point of the product, so they get real ledger
+   treatment: tabular, tight, and never in a decorative face. */
+.ledger {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--green-wash);
+  color: var(--green-deep);
+}
+
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --------------------------------------------------------------- motifs */
+
+/* A running stitch, the same one that crosses the H in the mark. Used where
+   two pieces of the interface are joined. */
+.stitch {
+  position: relative;
+}
+.stitch::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1.5px dashed var(--green-edge);
+  border-radius: calc(var(--radius) - 5px);
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.stitch-top {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--green-edge) 0 7px,
+    transparent 7px 14px
+  );
+  background-size: 100% 1.5px;
+  background-repeat: no-repeat;
+  background-position: top;
+}
+
+/* A torn paper edge for the top of sheets that slide up. */
+.deckle {
+  -webkit-mask-image: radial-gradient(
+    circle at 6px -2px,
+    transparent 0 5px,
+    black 5px
+  );
+  -webkit-mask-size: 12px 100%;
+  mask-image: radial-gradient(circle at 6px -2px, transparent 0 5px, black 5px);
+  mask-size: 12px 100%;
+}
+
+/* ------------------------------------------------------------- utilities */
+
+.paper-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--lift-1);
+}
+
+.hairline {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--rule-strong) 15%,
+    var(--rule-strong) 85%,
+    transparent
+  );
+}
+
+.tape {
+  background: var(--marigold-wash);
+  border: 1px solid var(--marigold-edge);
+  color: #7a5a12;
+}
+:root[data-theme="dark"] .tape {
+  color: var(--marigold);
+}
+
+/* ------------------------------------------------------------ urdu script */
+
+html[data-locale="urdu"] body {
+  font-family: var(--font-urdu), var(--font-sans), serif;
+  line-height: 2.1;
+}
+html[data-locale="urdu"] h1,
+html[data-locale="urdu"] h2,
+html[data-locale="urdu"] h3,
+html[data-locale="urdu"] .display {
+  font-family: var(--font-urdu), var(--font-display), serif;
+  line-height: 2;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+/* Amounts, dates and links stay Latin so they remain readable as figures. */
+html[data-locale="urdu"] .ledger,
+html[data-locale="urdu"] .latin {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.35;
+}
+
+/* ------------------------------------------------------------- animation */
+
+@keyframes stitch-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.enter {
+  animation: stitch-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes spin-star {
+  to { transform: rotate(360deg); }
+}
+.spin-star {
+  animation: spin-star 1.6s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes draw-seam {
+  from { stroke-dashoffset: 120; }
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Printed income statements should look like a document, not a web page. */
+@media print {
+  body {
+    background: #fff;
+    background-image: none;
+    color: #000;
+  }
+  .no-print { display: none !important; }
+  .paper-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+}
