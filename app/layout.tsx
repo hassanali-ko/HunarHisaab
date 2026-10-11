@@ -59,10 +59,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf6ee" },
-    { media: "(prefers-color-scheme: dark)", color: "#11150f" },
-  ],
+  themeColor: "#faf6ee",
 };
 
 
@@ -76,7 +73,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       lang={htmlLang}
       dir={dir}
       data-locale={locale}
-      {...(theme === "system" ? {} : { "data-theme": theme })}
+      data-theme={theme}
       className={`${inter.variable} ${fraunces.variable} ${nastaliq.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">

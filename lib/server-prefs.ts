@@ -16,6 +16,8 @@ export async function readPrefs(): Promise<{ locale: Locale; theme: Theme }> {
   const theme = jar.get(THEME_COOKIE)?.value;
   return {
     locale: isLocale(locale) ? locale : DEFAULT_LOCALE,
-    theme: isTheme(theme) ? theme : "system",
+    // Light unless she chooses otherwise. The register is paper, and a phone
+    // set to dark mode should not decide that for her.
+    theme: isTheme(theme) ? theme : "light",
   };
 }

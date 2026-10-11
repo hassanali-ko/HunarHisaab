@@ -77,10 +77,11 @@ export function LangSwitcher({ className = "" }: { className?: string }) {
 export function ThemeSwitcher({ labels }: { labels: [string, string, string] }) {
   const current = useTheme();
   const [pending, start] = useTransition();
+  // Light first, since it is the default.
   const options: [Theme, string][] = [
-    ["system", labels[0]],
     ["light", labels[1]],
     ["dark", labels[2]],
+    ["system", labels[0]],
   ];
 
   return (

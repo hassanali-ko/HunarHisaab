@@ -54,9 +54,9 @@
   --radius-lg: 20px;
 }
 
-/* Dark applies when chosen outright, or when the phone is dark and nothing
-   has been chosen. Doing this in CSS means a server render can never fight
-   a script over which theme is showing. */
+/* Light is the default. Dark applies when chosen outright, or when she picked
+   "match my phone" and the phone is dark. Doing this in CSS means a server
+   render can never fight a script over which theme is showing. */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
@@ -95,7 +95,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root[data-theme="system"] {
     color-scheme: dark;
   
     --paper: #11150f;
@@ -275,7 +275,7 @@ h1, h2, h3, .display {
   background: #f3ede1;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .mark-chip {
+  :root[data-theme="system"] .mark-chip {
     background: #f3ede1;
   }
 }
@@ -309,7 +309,7 @@ h1, h2, h3, .display {
   color: var(--marigold);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .tape {
+  :root[data-theme="system"] .tape {
     color: var(--marigold);
   }
 }
