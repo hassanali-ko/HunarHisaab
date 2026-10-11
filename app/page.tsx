@@ -39,10 +39,16 @@ export default async function Landing() {
       <main id="main" className="flex-1">
         {/* ------------------------------------------------------------ hero */}
         <section className="mx-auto w-full max-w-5xl px-5 pb-12 pt-10 sm:pt-16">
-          <p className="inline-flex items-center gap-2 rounded-full border border-green-edge bg-green-wash px-3 py-1.5 text-[12px] font-medium text-green-deep">
-            <Star size={11} className="text-marigold" />
-            {t.heroKicker}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="inline-flex items-center gap-2 rounded-full border border-green-edge bg-green-wash px-3 py-1.5 text-[12px] font-medium text-green-deep">
+              <Star size={11} className="text-marigold" />
+              {t.heroKicker}
+            </p>
+            <p className="tape inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium">
+              <Star size={11} className="text-marigold" />
+              {t.award}
+            </p>
+          </div>
 
           <h1 className="mt-5 max-w-3xl text-[2.35rem] leading-[1.07] sm:text-[3.4rem]">
             {t.heroLine1}

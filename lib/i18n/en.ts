@@ -50,6 +50,7 @@ export const en = {
 
   // ---------------------------------------------------------------- landing
   heroKicker: "For women who work from home",
+  award: "2nd place, Google Pakistan hackathon",
   heroLine1: "Your work is real.",
   heroLine2: "Your hisaab should be too.",
   heroBody:

@@ -47,6 +47,7 @@ export const roman: Dict = {
   navNewOrder: "Naya order",
 
   heroKicker: "Ghar se kaam karne wali khawateen ke liye",
+  award: "Google Pakistan hackathon mein doosri position",
   heroLine1: "Aapka kaam asli hai.",
   heroLine2: "Hisaab bhi asli hona chahiye.",
   heroBody:

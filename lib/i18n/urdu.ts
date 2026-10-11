@@ -45,6 +45,7 @@ export const urdu: Dict = {
   navNewOrder: "نیا آرڈر",
 
   heroKicker: "گھر سے کام کرنے والی خواتین کے لیے",
+  award: "گوگل پاکستان ہیکاتھون میں دوسری پوزیشن",
   heroLine1: "آپ کا کام اصلی ہے۔",
   heroLine2: "حساب بھی اصلی ہونا چاہیے۔",
   heroBody:
