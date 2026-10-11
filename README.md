@@ -9,6 +9,7 @@
     <img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-0e6b3a">
     <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-111">
     <img alt="No AI key required" src="https://img.shields.io/badge/AI%20key-not%20required-e0a228">
+    <img alt="2nd place, Google Pakistan hackathon" src="https://img.shields.io/badge/Google%20Pakistan%20hackathon-2nd%20place-cf5330">
   </p>
 </div>
 
@@ -27,7 +28,10 @@ show it happened.
 So two separate problems, and the second one is the one everybody talks about
 while the first one is the one that costs money.
 
-HunarHisaab is my attempt at both.
+HunarHisaab is my attempt at both. It started as my entry to the Google
+Pakistan hackathon, where it came second. What is here now is the version I
+kept building afterwards, so that it could actually be used and not just
+demoed.
 
 ## The bit that convinced me to build it
 
